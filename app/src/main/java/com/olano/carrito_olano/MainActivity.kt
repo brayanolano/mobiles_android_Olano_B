@@ -4,13 +4,14 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import com.olano.carrito_olano.ui.theme.CarritoolanoTheme // ajusta el nombre exacto del Theme
 import com.olano.carrito_olano.ui.theme.CarritoolanoTheme
 
 class MainActivity : ComponentActivity() {
@@ -18,30 +19,104 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            CarritoolanoTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
+            CarritoolanoTheme() {
+                PantallaCarrito()
             }
         }
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
+fun PantallaCarrito() {
+    // --- Estados del formulario ---
+    var nombre by remember { mutableStateOf("") }
+    var precio by remember { mutableStateOf("") }
+    var cantidad by remember { mutableStateOf("") }
+
+    // --- Lista observable de productos agregados ---
+    // mutableStateListOf crea una lista que Compose "observa": cuando se
+    // agrega o quita un elemento, la UI que la lee se recompone sola.
+    val productos = remember { mutableStateListOf<Producto>() }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Mi Carrito TECSUP") },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color(0xFF6C5CA5),
+                    titleContentColor = Color.White
+                )
+            )
+        }
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .padding(16.dp)
+        ) {
+            // Campo nombre
+            TextField(
+                value = nombre,
+                onValueChange = { nombre = it },
+                label = { Text("Nombre del producto") },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Fila precio / cantidad
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                TextField(
+                    value = precio,
+                    onValueChange = { precio = it },
+                    label = { Text("Precio (S/)") },
+                    modifier = Modifier.weight(1f)
+                )
+                TextField(
+                    value = cantidad,
+                    onValueChange = { cantidad = it },
+                    label = { Text("Cantidad") },
+                    modifier = Modifier.weight(1f)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Botón AGREGAR: valida, agrega el producto a la lista y limpia el formulario
+            Button(
+                onClick = {
+                    val precioNum = precio.toDoubleOrNull() ?: 0.0
+                    val cantidadNum = cantidad.toIntOrNull() ?: 0
+                    if (nombre.isNotBlank() && precioNum > 0 && cantidadNum > 0) {
+                        productos.add(Producto(nombre, precioNum, cantidadNum))
+                        // Limpiamos los 3 campos para el siguiente producto
+                        nombre = ""
+                        precio = ""
+                        cantidad = ""
+                    }
+                },
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6C5CA5))
+            ) { Text("AGREGAR") }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Verificación temporal (se retira en el commit 3):
+            // confirma que la lista observable realmente crece al agregar.
+            Text("Productos: ${productos.size}")
+        }
+    }
 }
 
 @Preview(showBackground = true)
 @Composable
-fun GreetingPreview() {
-    CarritoolanoTheme {
-        Greeting("Android")
+fun PantallaCarritoPreview() {
+    CarritoolanoTheme() {
+        PantallaCarrito()
     }
 }
