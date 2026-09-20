@@ -13,6 +13,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.olano.carrito_olano.ui.theme.CarritoolanoTheme // ajusta el nombre exacto del Theme
 import com.olano.carrito_olano.ui.theme.CarritoolanoTheme
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -106,17 +108,16 @@ fun PantallaCarrito() {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Verificación temporal (se retira en el commit 3):
-            // confirma que la lista observable realmente crece al agregar.
-            Text("Productos: ${productos.size}")
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                items(productos) { producto ->
+                    Text(producto.nombre)
+                }
+            }
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun PantallaCarritoPreview() {
-    CarritoolanoTheme() {
-        PantallaCarrito()
     }
 }
