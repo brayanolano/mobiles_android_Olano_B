@@ -1,5 +1,6 @@
 package com.olano.tecsupfit.screens
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -11,7 +12,7 @@ import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -42,6 +43,35 @@ val listaCitasEjemplo = listOf(
 fun MisCitasScreen(
     onBack: () -> Unit
 ) {
+    var citas by remember { mutableStateOf(listaCitasEjemplo) }
+    var citaACancelar by remember { mutableStateOf<CitaItem?>(null) }
+
+    if (citaACancelar != null) {
+        val cita = citaACancelar!!
+        AlertDialog(
+            onDismissRequest = { citaACancelar = null },
+            title = { Text("Cancelar cita") },
+            text = { Text("¿Estás seguro de cancelar tu cita con ${cita.doctorNombre}?") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        citas = citas.map { item ->
+                            if (item.id == cita.id) item.copy(estado = "Cancelada") else item
+                        }
+                        citaACancelar = null
+                    }
+                ) {
+                    Text("Sí, cancelar", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { citaACancelar = null }) {
+                    Text("No, mantener")
+                }
+            }
+        )
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -74,15 +104,21 @@ fun MisCitasScreen(
                 .padding(horizontal = 16.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            items(listaCitasEjemplo) { cita ->
-                CitaCard(cita = cita)
+            items(citas, key = { it.id }) { cita ->
+                CitaCard(
+                    cita = cita,
+                    onCancelarClick = { citaACancelar = cita }
+                )
             }
         }
     }
 }
 
 @Composable
-fun CitaCard(cita: CitaItem) {
+fun CitaCard(
+    cita: CitaItem,
+    onCancelarClick: () -> Unit = {}
+) {
     ElevatedCard(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
@@ -179,6 +215,24 @@ fun CitaCard(cita: CitaItem) {
                     color = MaterialTheme.colorScheme.onSurface
                 )
             }
+
+            // Botón de Cancelar Cita si la cita está Confirmada
+            if (cita.estado == "Confirmada") {
+                Spacer(modifier = Modifier.height(12.dp))
+                OutlinedButton(
+                    onClick = onCancelarClick,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = MaterialTheme.colorScheme.error
+                    ),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.error)
+                ) {
+                    Text(
+                        text = "Cancelar Cita",
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+            }
         }
     }
 }
@@ -188,6 +242,7 @@ fun EstadoBadge(estado: String) {
     val (backgroundColor, textColor) = when (estado) {
         "Confirmada" -> Color(0xFFE8F5E9) to Color(0xFF2E7D32) // Verde claro / verde oscuro
         "Completada" -> Color(0xFFE3F2FD) to Color(0xFF1565C0) // Azul claro / azul oscuro
+        "Cancelada" -> Color(0xFFFFEBEE) to Color(0xFFC62828)  // Rojo claro / rojo oscuro
         else -> Color(0xFFEEEEEE) to Color(0xFF616161)         // Gris
     }
 
