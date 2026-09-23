@@ -43,7 +43,7 @@ val listaCitasEjemplo = listOf(
 fun MisCitasScreen(
     onBack: () -> Unit
 ) {
-    var citas by remember { mutableStateOf(listaCitasEjemplo) }
+    val citas = remember { mutableStateListOf(*listaCitasEjemplo.toTypedArray()) }
     var citaACancelar by remember { mutableStateOf<CitaItem?>(null) }
 
     if (citaACancelar != null) {
@@ -55,8 +55,9 @@ fun MisCitasScreen(
             confirmButton = {
                 TextButton(
                     onClick = {
-                        citas = citas.map { item ->
-                            if (item.id == cita.id) item.copy(estado = "Cancelada") else item
+                        val index = citas.indexOfFirst { it.id == cita.id }
+                        if (index != -1) {
+                            citas[index] = citas[index].copy(estado = "Cancelada")
                         }
                         citaACancelar = null
                     }
@@ -216,19 +217,25 @@ fun CitaCard(
                 )
             }
 
-            // Botón de Cancelar Cita si la cita está Confirmada
-            if (cita.estado == "Confirmada") {
+            // Botón de Cancelar Cita si la cita está Confirmada o Cancelada
+            if ((cita.estado == "Confirmada") || (cita.estado == "Cancelada")) {
                 Spacer(modifier = Modifier.height(12.dp))
                 OutlinedButton(
                     onClick = onCancelarClick,
+                    enabled = cita.estado == "Confirmada",
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = MaterialTheme.colorScheme.error
+                        contentColor = MaterialTheme.colorScheme.error,
+                        disabledContentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
                     ),
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.error)
+                    border = BorderStroke(
+                        1.dp,
+                        if (cita.estado == "Confirmada") MaterialTheme.colorScheme.error
+                        else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
+                    )
                 ) {
                     Text(
-                        text = "Cancelar Cita",
+                        text = if (cita.estado == "Cancelada") "Cita Cancelada" else "Cancelar Cita",
                         fontWeight = FontWeight.SemiBold
                     )
                 }
