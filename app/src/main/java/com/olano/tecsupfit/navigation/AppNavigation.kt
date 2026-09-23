@@ -1,11 +1,16 @@
 package com.olano.navlab.navigation
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.navigation.NavType
 import androidx.navigation.compose.*
 import androidx.navigation.navArgument
 import com.olano.navlab.screens.*
+import com.olano.tecsupfit.screens.MisCitasScreen
 import kotlinx.coroutines.launch
 
 @Composable
@@ -19,7 +24,10 @@ fun AppNavigation() {
         drawerContent = {
             DrawerContent(
                 usuarioNombre = "Brayan Olano",
-                onNavigate = { ruta -> navController.navigate(ruta) },
+                onNavigate = { ruta ->
+                    scope.launch { drawerState.close() }
+                    navController.navigate(ruta)
+                },
                 onCloseDrawer = { scope.launch { drawerState.close() } }
             )
         }
@@ -89,9 +97,31 @@ fun AppNavigation() {
                 )
             }
 
-            composable(Screen.MisCitas.route) { MisCitasScreen() }
-            composable(Screen.Historial.route) { Text("Pantalla Historial") }
-            composable(Screen.Perfil.route) { PerfilScreen() }
+            composable(Screen.MisCitas.route) {
+                MisCitasScreen(
+                    onBack = { navController.popBackStack() }
+                )
+            }
+
+            composable(Screen.Historial.route) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("Historial de Citas Médicas")
+                }
+            }
+
+            // Redirige la ruta del Perfil hacia el PerfilMedicoScreen usando el doctor 1 por defecto
+            composable(Screen.Perfil.route) {
+                PerfilMedicoScreen(
+                    doctorId = 1,
+                    onBack = { navController.popBackStack() },
+                    onAgendarClick = { doctorNombre ->
+                        navController.navigate(Screen.AgendarCita.createRoute(doctorNombre))
+                    }
+                )
+            }
         }
     }
 }
