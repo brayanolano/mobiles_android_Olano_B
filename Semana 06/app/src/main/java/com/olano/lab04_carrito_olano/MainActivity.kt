@@ -4,7 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import com.olano.lab04_carrito_olano.screens.AppNavegacion
+import com.olano.lab04_carrito_olano.screens.PantallaCarrito
 import com.olano.lab04_carrito_olano.ui.theme.Lab04carritoolanoTheme
 
 class MainActivity : ComponentActivity() {
@@ -13,7 +13,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             Lab04carritoolanoTheme {
-                AppNavegacion()
+                PantallaCarrito()
             }
         }
     }
