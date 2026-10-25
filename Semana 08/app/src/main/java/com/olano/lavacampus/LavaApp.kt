@@ -7,7 +7,6 @@ import com.olano.lavacampus.data.repository.LavaRepository
 import com.olano.lavacampus.data.repository.LavaRepositoryRoom
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 
 class LavaApp : Application() {
@@ -16,7 +15,7 @@ class LavaApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
+        CoroutineScope(Dispatchers.IO).launch {
             DatosIniciales.sembrar(database)
         }
     }
