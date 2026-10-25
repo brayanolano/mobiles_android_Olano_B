@@ -1,3 +1,34 @@
 package com.olano.lavacampus.data.local.entity
 
-// TODO: se implementa en el paso correspondiente del laboratorio
+import androidx.room.Entity
+import androidx.room.ForeignKey
+import androidx.room.Index
+import androidx.room.PrimaryKey
+
+@Entity(
+    tableName = "pedidos",
+    foreignKeys = [
+        ForeignKey(
+            entity = Usuario::class,
+            parentColumns = ["id"],
+            childColumns = ["usuarioId"],
+            onDelete = ForeignKey.CASCADE
+        )
+    ],
+    indices = [
+        Index("usuarioId"),
+        Index("estado")
+    ]
+)
+data class Pedido(
+    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    val usuarioId: Int,
+    val fechaRegistro: String, // 'aaaa-MM-dd'
+    val fechaEntrega: String,  // 'aaaa-MM-dd'
+    val estado: String,        // RECIBIDO | EN_PROCESO | LISTO | ENTREGADO | CANCELADO
+    val total: Double,
+    val casillero: String? = null,
+    val pagado: Boolean = false,
+    val nota: String = "",
+    val fechaCreacion: Long = System.currentTimeMillis()
+)
