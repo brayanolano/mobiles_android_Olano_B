@@ -16,6 +16,9 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.olano.lavacampus.LavaApp
 import com.olano.lavacampus.model.Rol
+import com.olano.lavacampus.ui.administrador.BandejaScreen
+import com.olano.lavacampus.ui.administrador.GestionPedidoScreen
+import com.olano.lavacampus.ui.administrador.PanelScreen
 import com.olano.lavacampus.ui.administrador.ServiciosScreen
 import com.olano.lavacampus.ui.components.AppTopBar
 import com.olano.lavacampus.ui.estudiante.DetallePedidoScreen
@@ -26,11 +29,14 @@ import com.olano.lavacampus.ui.estudiante.NuevoPedidoScreen
 import com.olano.lavacampus.ui.estudiante.SplashScreen
 import com.olano.lavacampus.ui.estudiante.TarifasScreen
 import com.olano.lavacampus.ui.theme.LavaTheme
+import com.olano.lavacampus.viewmodel.BandejaAdminViewModel
 import com.olano.lavacampus.viewmodel.DetallePedidoViewModel
+import com.olano.lavacampus.viewmodel.GestionPedidoViewModel
 import com.olano.lavacampus.viewmodel.InicioViewModel
 import com.olano.lavacampus.viewmodel.LavaViewModelFactory
 import com.olano.lavacampus.viewmodel.MisPedidosViewModel
 import com.olano.lavacampus.viewmodel.NuevoPedidoViewModel
+import com.olano.lavacampus.viewmodel.PanelAdminViewModel
 import com.olano.lavacampus.viewmodel.ServiciosViewModel
 import com.olano.lavacampus.viewmodel.SesionViewModel
 import com.olano.lavacampus.viewmodel.TarifasViewModel
@@ -128,6 +134,41 @@ fun NavLava() {
                 val factory = LavaViewModelFactory(app.repository, app.preferenciasStore, usuarioIdGuardado)
                 val vm: TarifasViewModel = viewModel(factory = factory)
                 TarifasScreen(
+                    vm = vm,
+                    onAtras = { nav.popBackStack() }
+                )
+            }
+
+            composable(Rutas.PANEL) {
+                val factory = LavaViewModelFactory(app.repository, app.preferenciasStore, usuarioIdGuardado)
+                val vm: PanelAdminViewModel = viewModel(factory = factory)
+                PanelScreen(
+                    vm = vm,
+                    onIrBandeja = { nav.navigate(Rutas.BANDEJA) },
+                    onIrServicios = { nav.navigate(Rutas.SERVICIOS) },
+                    onIrClientes = { nav.navigate(Rutas.CLIENTES) },
+                    onIrAjustes = { nav.navigate(Rutas.AJUSTES) }
+                )
+            }
+
+            composable(Rutas.BANDEJA) {
+                val factory = LavaViewModelFactory(app.repository, app.preferenciasStore, usuarioIdGuardado)
+                val vm: BandejaAdminViewModel = viewModel(factory = factory)
+                BandejaScreen(
+                    vm = vm,
+                    onAtras = { nav.popBackStack() },
+                    onGestionarPedido = { id -> nav.navigate(Rutas.gestionPedido(id)) }
+                )
+            }
+
+            composable(
+                route = Rutas.GESTION_PEDIDO,
+                arguments = listOf(navArgument("pedidoId") { type = NavType.IntType })
+            ) { backStackEntry ->
+                val pedidoId = backStackEntry.arguments?.getInt("pedidoId") ?: -1
+                val factory = LavaViewModelFactory(app.repository, app.preferenciasStore, usuarioIdGuardado, pedidoId)
+                val vm: GestionPedidoViewModel = viewModel(factory = factory)
+                GestionPedidoScreen(
                     vm = vm,
                     onAtras = { nav.popBackStack() }
                 )
