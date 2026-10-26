@@ -2,7 +2,8 @@ package com.olano.lavacampus.ui.navigation
 
 object Rutas {
     const val SPLASH = "splash"
+    const val LOGIN = "login"
+    const val INICIO = "inicio"
+    const val PANEL = "panel"
     const val SERVICIOS = "servicios"
-    // TODO (Pasos 6 al 13): LOGIN, INICIO, NUEVO_PEDIDO, DETALLE, MIS_PEDIDOS, TARIFAS, PERFIL,
-    //                       PANEL, BANDEJA, GESTION, FORMULARIO_SERVICIO, CLIENTES, AJUSTES
 }
