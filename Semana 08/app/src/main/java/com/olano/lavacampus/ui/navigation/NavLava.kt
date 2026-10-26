@@ -18,10 +18,12 @@ import com.olano.lavacampus.ui.administrador.ServiciosScreen
 import com.olano.lavacampus.ui.components.AppTopBar
 import com.olano.lavacampus.ui.estudiante.InicioScreen
 import com.olano.lavacampus.ui.estudiante.LoginScreen
+import com.olano.lavacampus.ui.estudiante.NuevoPedidoScreen
 import com.olano.lavacampus.ui.estudiante.SplashScreen
 import com.olano.lavacampus.ui.theme.LavaTheme
 import com.olano.lavacampus.viewmodel.InicioViewModel
 import com.olano.lavacampus.viewmodel.LavaViewModelFactory
+import com.olano.lavacampus.viewmodel.NuevoPedidoViewModel
 import com.olano.lavacampus.viewmodel.ServiciosViewModel
 import com.olano.lavacampus.viewmodel.SesionViewModel
 
@@ -74,6 +76,19 @@ fun NavLava() {
                     onVerPedidos = { nav.navigate(Rutas.MIS_PEDIDOS) },
                     onVerTarifas = { nav.navigate(Rutas.TARIFAS) },
                     onVerDetalle = { id -> nav.navigate(Rutas.detallePedido(id)) }
+                )
+            }
+
+            composable(Rutas.NUEVO_PEDIDO) {
+                val vm: NuevoPedidoViewModel = viewModel(factory = factory)
+                NuevoPedidoScreen(
+                    vm = vm,
+                    onAtras = { nav.popBackStack() },
+                    onPedidoCreado = { pedidoId ->
+                        nav.navigate(Rutas.detallePedido(pedidoId)) {
+                            popUpTo(Rutas.NUEVO_PEDIDO) { inclusive = true }
+                        }
+                    }
                 )
             }
 
