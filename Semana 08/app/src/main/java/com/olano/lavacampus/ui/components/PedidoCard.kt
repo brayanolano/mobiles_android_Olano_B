@@ -1,5 +1,6 @@
 package com.olano.lavacampus.ui.components
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -27,7 +28,8 @@ import com.olano.lavacampus.model.Unidad
 fun PedidoCard(
     pedidoConDetalle: PedidoConDetalle,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    esAtrasado: Boolean = false
 ) {
     val p = pedidoConDetalle.pedido
     val detalles = pedidoConDetalle.detalles
@@ -40,7 +42,6 @@ fun PedidoCard(
     val primerServicio = detalles.firstOrNull()?.servicio
     val icono = primerServicio?.icono ?: "wash"
 
-    // Resumen breve de cantidades (acceso corregido con d.detalle.cantidad)
     val resumenCantidades = detalles.joinToString(" · ") { d ->
         val un = Unidad.desde(d.servicio.unidad)
         val cant = d.detalle.cantidad
@@ -50,7 +51,11 @@ fun PedidoCard(
 
     Card(
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        colors = CardDefaults.cardColors(
+            containerColor = if (esAtrasado) MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.25f)
+            else MaterialTheme.colorScheme.surface
+        ),
+        border = if (esAtrasado) BorderStroke(2.dp, MaterialTheme.colorScheme.error) else null,
         modifier = modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
@@ -78,16 +83,17 @@ fun PedidoCard(
                         text = "S/ %.2f".format(p.total),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
+                        color = if (esAtrasado) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
                     )
                 }
 
                 Spacer(modifier = Modifier.height(4.dp))
 
                 Text(
-                    text = if (resumenCantidades.isNotEmpty()) "$resumenCantidades · ${p.fechaRegistro}" else p.fechaRegistro,
+                    text = if (resumenCantidades.isNotEmpty()) "$resumenCantidades · Entrega: ${p.fechaEntrega}" else "Entrega: ${p.fechaEntrega}",
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                    color = if (esAtrasado) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                    fontWeight = if (esAtrasado) FontWeight.SemiBold else FontWeight.Normal
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -97,7 +103,27 @@ fun PedidoCard(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    EstadoPedidoChip(estado = estadoEnum)
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        EstadoPedidoChip(estado = estadoEnum)
+
+                        if (esAtrasado) {
+                            Surface(
+                                color = MaterialTheme.colorScheme.error,
+                                shape = RoundedCornerShape(8.dp)
+                            ) {
+                                Text(
+                                    text = "¡ATRASADO!",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onError,
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                )
+                            }
+                        }
+                    }
 
                     if (estadoEnum == EstadoPedido.LISTO && !p.casillero.isNullOrEmpty()) {
                         Surface(

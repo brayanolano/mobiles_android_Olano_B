@@ -114,6 +114,21 @@ class LavaRepositoryRoom(private val db: LavaDatabase) : LavaRepository {
     override fun observarCasillerosOcupados(): Flow<List<String>> =
         db.pedidoDao().observarCasillerosOcupados()
 
+    // Pedidos Atrasados
+    override fun observarPedidosAtrasados(fechaHoy: String): Flow<List<PedidoConDetalle>> =
+        db.pedidoDao().observarPedidosAtrasados(fechaHoy)
+
+    override fun observarIdsPedidosAtrasados(fechaHoy: String): Flow<List<Int>> =
+        db.pedidoDao().observarIdsPedidosAtrasados(fechaHoy)
+
+    override fun contarPedidosAtrasados(fechaHoy: String): Flow<Int> =
+        db.pedidoDao().contarPedidosAtrasados(fechaHoy)
+
+    override fun esAtrasado(pedido: Pedido): Boolean {
+        val hoy = LocalDate.now().toString()
+        return pedido.fechaEntrega < hoy && pedido.estado != EstadoPedido.ENTREGADO.name && pedido.estado != EstadoPedido.CANCELADO.name
+    }
+
     // Panel
     override fun observarPedidosDeFecha(fecha: String): Flow<Int> =
         db.pedidoDao().contarPorFecha(fecha)

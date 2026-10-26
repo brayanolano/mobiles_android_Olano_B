@@ -1,5 +1,6 @@
 package com.olano.lavacampus.data.repository
 
+import com.olano.lavacampus.data.local.entity.Pedido
 import com.olano.lavacampus.data.local.entity.Servicio
 import com.olano.lavacampus.data.local.entity.Usuario
 import com.olano.lavacampus.data.local.relation.PedidoConDetalle
@@ -36,6 +37,12 @@ interface LavaRepository {
     suspend fun cambiarEstado(id: Int, estado: EstadoPedido, casillero: String?)
     suspend fun marcarPagado(id: Int, pagado: Boolean)
     fun observarCasillerosOcupados(): Flow<List<String>>
+
+    // Pedidos Atrasados
+    fun observarPedidosAtrasados(fechaHoy: String): Flow<List<PedidoConDetalle>>
+    fun observarIdsPedidosAtrasados(fechaHoy: String): Flow<List<Int>>
+    fun contarPedidosAtrasados(fechaHoy: String): Flow<Int>
+    fun esAtrasado(pedido: Pedido): Boolean
 
     // Panel
     fun observarPedidosDeFecha(fecha: String): Flow<Int>

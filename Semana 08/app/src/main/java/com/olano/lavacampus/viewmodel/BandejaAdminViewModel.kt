@@ -10,20 +10,54 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 
 class BandejaAdminViewModel(private val repo: LavaRepository) : ViewModel() {
 
     private val _estadoFiltro = MutableStateFlow("TODOS")
     val estadoFiltro: StateFlow<String> = _estadoFiltro.asStateFlow()
 
+    private val hoy = LocalDate.now().toString()
+
+    // Exponer el conjunto de IDs de pedidos atrasados
+    val idsPedidosAtrasados: StateFlow<Set<Int>> = repo.observarIdsPedidosAtrasados(hoy)
+        .map { it.toSet() }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptySet()
+        )
+
+    // Exponer la lista de pedidos atrasados
+    val pedidosAtrasados: StateFlow<List<PedidoConDetalle>> = repo.observarPedidosAtrasados(hoy)
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
+
+    // Exponer la cantidad total de pedidos atrasados
+    val cantidadAtrasados: StateFlow<Int> = repo.contarPedidosAtrasados(hoy)
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = 0
+        )
+
     val pedidos: StateFlow<List<PedidoConDetalle>> = combine(
         repo.observarPedidos(),
         _estadoFiltro
     ) { lista, filtro ->
-        if (filtro == "TODOS") lista
-        else lista.filter { it.pedido.estado == filtro }
+        when (filtro) {
+            "TODOS" -> lista
+            "ATRASADOS" -> lista.filter { p ->
+                p.pedido.fechaEntrega < hoy && p.pedido.estado != "ENTREGADO" && p.pedido.estado != "CANCELADO"
+            }
+            else -> lista.filter { it.pedido.estado == filtro }
+        }
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),

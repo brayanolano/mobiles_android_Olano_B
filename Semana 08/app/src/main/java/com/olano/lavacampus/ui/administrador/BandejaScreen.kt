@@ -24,7 +24,7 @@ import com.olano.lavacampus.ui.components.AppTopBar
 import com.olano.lavacampus.ui.components.PedidoCard
 import com.olano.lavacampus.viewmodel.BandejaAdminViewModel
 
-private val listaFiltros = listOf("TODOS", "RECIBIDO", "EN_PROCESO", "LISTO", "ENTREGADO", "CANCELADO")
+private val listaFiltros = listOf("TODOS", "ATRASADOS", "RECIBIDO", "EN_PROCESO", "LISTO", "ENTREGADO", "CANCELADO")
 
 @Composable
 fun BandejaScreen(
@@ -34,6 +34,8 @@ fun BandejaScreen(
 ) {
     val filtroActual by vm.estadoFiltro.collectAsState()
     val pedidos by vm.pedidos.collectAsState()
+    val idsAtrasados by vm.idsPedidosAtrasados.collectAsState()
+    val cantAtrasados by vm.cantidadAtrasados.collectAsState()
 
     Scaffold(
         topBar = { AppTopBar(titulo = "Bandeja de Pedidos", onAtras = onAtras) }
@@ -49,15 +51,33 @@ fun BandejaScreen(
             ) {
                 items(listaFiltros) { f ->
                     val seleccionado = f == filtroActual
+                    val esFiltroAtrasados = f == "ATRASADOS"
+
+                    val colorChip = when {
+                        seleccionado && esFiltroAtrasados -> MaterialTheme.colorScheme.error
+                        seleccionado -> MaterialTheme.colorScheme.primary
+                        esFiltroAtrasados && cantAtrasados > 0 -> MaterialTheme.colorScheme.errorContainer
+                        else -> MaterialTheme.colorScheme.surface
+                    }
+
+                    val colorTexto = when {
+                        seleccionado && esFiltroAtrasados -> MaterialTheme.colorScheme.onError
+                        seleccionado -> MaterialTheme.colorScheme.onPrimary
+                        esFiltroAtrasados && cantAtrasados > 0 -> MaterialTheme.colorScheme.onErrorContainer
+                        else -> MaterialTheme.colorScheme.onSurface
+                    }
+
+                    val etiqueta = if (esFiltroAtrasados && cantAtrasados > 0) "ATRASADOS ($cantAtrasados)" else f
+
                     Surface(
                         shape = RoundedCornerShape(20.dp),
-                        color = if (seleccionado) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
+                        color = colorChip,
                         modifier = Modifier.clickable { vm.cambiarFiltro(f) }
                     ) {
                         Text(
-                            text = f,
-                            color = if (seleccionado) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
-                            fontWeight = if (seleccionado) FontWeight.Bold else FontWeight.Normal,
+                            text = etiqueta,
+                            color = colorTexto,
+                            fontWeight = if (seleccionado || (esFiltroAtrasados && cantAtrasados > 0)) FontWeight.Bold else FontWeight.Normal,
                             style = MaterialTheme.typography.labelMedium,
                             modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp)
                         )
@@ -71,8 +91,10 @@ fun BandejaScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 items(pedidos, key = { it.pedido.id }) { p ->
+                    val esAtrasado = idsAtrasados.contains(p.pedido.id)
                     PedidoCard(
                         pedidoConDetalle = p,
+                        esAtrasado = esAtrasado,
                         onClick = { onGestionarPedido(p.pedido.id) }
                     )
                 }
