@@ -9,18 +9,22 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.olano.lavacampus.LavaApp
 import com.olano.lavacampus.model.Rol
 import com.olano.lavacampus.ui.administrador.ServiciosScreen
 import com.olano.lavacampus.ui.components.AppTopBar
+import com.olano.lavacampus.ui.estudiante.DetallePedidoScreen
 import com.olano.lavacampus.ui.estudiante.InicioScreen
 import com.olano.lavacampus.ui.estudiante.LoginScreen
 import com.olano.lavacampus.ui.estudiante.NuevoPedidoScreen
 import com.olano.lavacampus.ui.estudiante.SplashScreen
 import com.olano.lavacampus.ui.theme.LavaTheme
+import com.olano.lavacampus.viewmodel.DetallePedidoViewModel
 import com.olano.lavacampus.viewmodel.InicioViewModel
 import com.olano.lavacampus.viewmodel.LavaViewModelFactory
 import com.olano.lavacampus.viewmodel.NuevoPedidoViewModel
@@ -38,8 +42,6 @@ fun NavLava() {
 
     val rolActual = if (perfilGuardado == Rol.ADMIN.name) Rol.ADMIN else Rol.CLIENTE
 
-    val factory = LavaViewModelFactory(app.repository, app.preferenciasStore, usuarioIdGuardado)
-
     LavaTheme(rol = rolActual, modoOscuro = modoOscuro) {
         NavHost(navController = nav, startDestination = Rutas.SPLASH) {
             composable(Rutas.SPLASH) {
@@ -56,6 +58,7 @@ fun NavLava() {
             }
 
             composable(Rutas.LOGIN) {
+                val factory = LavaViewModelFactory(app.repository, app.preferenciasStore, usuarioIdGuardado)
                 val vm: SesionViewModel = viewModel(factory = factory)
                 LoginScreen(
                     vm = vm,
@@ -69,6 +72,7 @@ fun NavLava() {
             }
 
             composable(Rutas.INICIO) {
+                val factory = LavaViewModelFactory(app.repository, app.preferenciasStore, usuarioIdGuardado)
                 val vm: InicioViewModel = viewModel(factory = factory)
                 InicioScreen(
                     vm = vm,
@@ -80,6 +84,7 @@ fun NavLava() {
             }
 
             composable(Rutas.NUEVO_PEDIDO) {
+                val factory = LavaViewModelFactory(app.repository, app.preferenciasStore, usuarioIdGuardado)
                 val vm: NuevoPedidoViewModel = viewModel(factory = factory)
                 NuevoPedidoScreen(
                     vm = vm,
@@ -92,7 +97,21 @@ fun NavLava() {
                 )
             }
 
+            composable(
+                route = Rutas.DETALLE_PEDIDO,
+                arguments = listOf(navArgument("pedidoId") { type = NavType.IntType })
+            ) { backStackEntry ->
+                val pedidoId = backStackEntry.arguments?.getInt("pedidoId") ?: -1
+                val factory = LavaViewModelFactory(app.repository, app.preferenciasStore, usuarioIdGuardado, pedidoId)
+                val vm: DetallePedidoViewModel = viewModel(factory = factory)
+                DetallePedidoScreen(
+                    vm = vm,
+                    onAtras = { nav.popBackStack() }
+                )
+            }
+
             composable(Rutas.SERVICIOS) {
+                val factory = LavaViewModelFactory(app.repository, app.preferenciasStore, usuarioIdGuardado)
                 val vm: ServiciosViewModel = viewModel(factory = factory)
                 Scaffold(topBar = { AppTopBar("Servicios") }) { padding ->
                     Box(Modifier.padding(padding)) {
