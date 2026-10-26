@@ -21,15 +21,19 @@ import com.olano.lavacampus.ui.components.AppTopBar
 import com.olano.lavacampus.ui.estudiante.DetallePedidoScreen
 import com.olano.lavacampus.ui.estudiante.InicioScreen
 import com.olano.lavacampus.ui.estudiante.LoginScreen
+import com.olano.lavacampus.ui.estudiante.MisPedidosScreen
 import com.olano.lavacampus.ui.estudiante.NuevoPedidoScreen
 import com.olano.lavacampus.ui.estudiante.SplashScreen
+import com.olano.lavacampus.ui.estudiante.TarifasScreen
 import com.olano.lavacampus.ui.theme.LavaTheme
 import com.olano.lavacampus.viewmodel.DetallePedidoViewModel
 import com.olano.lavacampus.viewmodel.InicioViewModel
 import com.olano.lavacampus.viewmodel.LavaViewModelFactory
+import com.olano.lavacampus.viewmodel.MisPedidosViewModel
 import com.olano.lavacampus.viewmodel.NuevoPedidoViewModel
 import com.olano.lavacampus.viewmodel.ServiciosViewModel
 import com.olano.lavacampus.viewmodel.SesionViewModel
+import com.olano.lavacampus.viewmodel.TarifasViewModel
 
 @Composable
 fun NavLava() {
@@ -105,6 +109,25 @@ fun NavLava() {
                 val factory = LavaViewModelFactory(app.repository, app.preferenciasStore, usuarioIdGuardado, pedidoId)
                 val vm: DetallePedidoViewModel = viewModel(factory = factory)
                 DetallePedidoScreen(
+                    vm = vm,
+                    onAtras = { nav.popBackStack() }
+                )
+            }
+
+            composable(Rutas.MIS_PEDIDOS) {
+                val factory = LavaViewModelFactory(app.repository, app.preferenciasStore, usuarioIdGuardado)
+                val vm: MisPedidosViewModel = viewModel(factory = factory)
+                MisPedidosScreen(
+                    vm = vm,
+                    onAtras = { nav.popBackStack() },
+                    onVerDetalle = { id -> nav.navigate(Rutas.detallePedido(id)) }
+                )
+            }
+
+            composable(Rutas.TARIFAS) {
+                val factory = LavaViewModelFactory(app.repository, app.preferenciasStore, usuarioIdGuardado)
+                val vm: TarifasViewModel = viewModel(factory = factory)
+                TarifasScreen(
                     vm = vm,
                     onAtras = { nav.popBackStack() }
                 )
