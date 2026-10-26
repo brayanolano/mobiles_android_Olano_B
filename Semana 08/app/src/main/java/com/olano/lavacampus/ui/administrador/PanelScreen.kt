@@ -12,9 +12,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DryCleaning
 import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.Inbox
-import androidx.compose.material.icons.filled.LocalCleaningServices
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -104,7 +104,7 @@ fun PanelScreen(
                     )
                     BotonMenuAdmin(
                         texto = "Servicios",
-                        icono = Icons.Filled.LocalCleaningServices,
+                        icono = Icons.Filled.DryCleaning,
                         onClick = onIrServicios,
                         modifier = Modifier.weight(1f)
                     )

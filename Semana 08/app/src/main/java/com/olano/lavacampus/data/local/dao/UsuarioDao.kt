@@ -10,27 +10,25 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface UsuarioDao {
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertar(usuario: Usuario): Long
+
     @Query("SELECT * FROM usuarios WHERE correo = :correo AND clave = :clave LIMIT 1")
     suspend fun login(correo: String, clave: String): Usuario?
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertarTodos(lista: List<Usuario>)
-
-    @Query("SELECT COUNT(*) FROM usuarios")
-    suspend fun contar(): Int
-
     @Query("""
         SELECT 
-            u.id AS usuarioId,
-            u.nombre AS nombre,
+            u.id AS id, 
+            u.nombre AS nombre, 
+            u.correo AS correo, 
             u.codigo AS codigo,
-            COUNT(CASE WHEN p.estado != 'CANCELADO' THEN 1 END) AS cantidadPedidos,
-            COALESCE(SUM(CASE WHEN p.pagado = 1 THEN p.total ELSE 0.0 END), 0.0) AS totalGastado
+            COUNT(p.id) AS totalPedidos,
+            SUM(CASE WHEN p.estado IN ('RECIBIDO', 'EN_PROCESO', 'LISTO') THEN 1 ELSE 0 END) AS pedidosActivos,
+            COALESCE(SUM(p.total), 0.0) AS totalGastado
         FROM usuarios u
         LEFT JOIN pedidos p ON u.id = p.usuarioId
         WHERE u.rol = 'CLIENTE'
         GROUP BY u.id
-        ORDER BY u.nombre
     """)
     fun observarClientes(): Flow<List<ClienteResumen>>
 }

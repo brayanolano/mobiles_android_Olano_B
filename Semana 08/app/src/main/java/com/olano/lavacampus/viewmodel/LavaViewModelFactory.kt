@@ -9,7 +9,8 @@ class LavaViewModelFactory(
     private val repo: LavaRepository,
     private val prefs: PreferenciasStore,
     private val usuarioId: Int = -1,
-    private val pedidoId: Int = -1
+    private val pedidoId: Int = -1,
+    private val servicioId: Int = -1
 ) : ViewModelProvider.Factory {
 
     @Suppress("UNCHECKED_CAST")
@@ -43,6 +44,15 @@ class LavaViewModelFactory(
 
         modelClass.isAssignableFrom(GestionPedidoViewModel::class.java) ->
             GestionPedidoViewModel(repo, pedidoId) as T
+
+        modelClass.isAssignableFrom(FormularioServicioViewModel::class.java) ->
+            FormularioServicioViewModel(repo, servicioId) as T
+
+        modelClass.isAssignableFrom(ClientesViewModel::class.java) ->
+            ClientesViewModel(repo) as T
+
+        modelClass.isAssignableFrom(AjustesViewModel::class.java) ->
+            AjustesViewModel(prefs) as T
 
         else -> throw IllegalArgumentException("ViewModel desconocido: ${modelClass.name}")
     }

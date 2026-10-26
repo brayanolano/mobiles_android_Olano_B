@@ -14,7 +14,9 @@ class ServiciosViewModel(private val repo: LavaRepository) : ViewModel() {
     val servicios: StateFlow<List<Servicio>> = repo.observarServicios()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    fun alternar(s: Servicio) {
-        viewModelScope.launch { repo.cambiarActivo(s.id, !s.activo) }
+    fun cambiarActivo(id: Int, activo: Boolean) {
+        viewModelScope.launch {
+            repo.cambiarActivo(id, activo)
+        }
     }
 }

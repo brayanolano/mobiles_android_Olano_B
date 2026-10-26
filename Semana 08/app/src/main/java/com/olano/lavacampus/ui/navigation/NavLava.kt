@@ -16,7 +16,10 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.olano.lavacampus.LavaApp
 import com.olano.lavacampus.model.Rol
+import com.olano.lavacampus.ui.administrador.AjustesScreen
 import com.olano.lavacampus.ui.administrador.BandejaScreen
+import com.olano.lavacampus.ui.administrador.ClientesScreen
+import com.olano.lavacampus.ui.administrador.FormularioServicioScreen
 import com.olano.lavacampus.ui.administrador.GestionPedidoScreen
 import com.olano.lavacampus.ui.administrador.PanelScreen
 import com.olano.lavacampus.ui.administrador.ServiciosScreen
@@ -29,8 +32,11 @@ import com.olano.lavacampus.ui.estudiante.NuevoPedidoScreen
 import com.olano.lavacampus.ui.estudiante.SplashScreen
 import com.olano.lavacampus.ui.estudiante.TarifasScreen
 import com.olano.lavacampus.ui.theme.LavaTheme
+import com.olano.lavacampus.viewmodel.AjustesViewModel
 import com.olano.lavacampus.viewmodel.BandejaAdminViewModel
+import com.olano.lavacampus.viewmodel.ClientesViewModel
 import com.olano.lavacampus.viewmodel.DetallePedidoViewModel
+import com.olano.lavacampus.viewmodel.FormularioServicioViewModel
 import com.olano.lavacampus.viewmodel.GestionPedidoViewModel
 import com.olano.lavacampus.viewmodel.InicioViewModel
 import com.olano.lavacampus.viewmodel.LavaViewModelFactory
@@ -177,11 +183,50 @@ fun NavLava() {
             composable(Rutas.SERVICIOS) {
                 val factory = LavaViewModelFactory(app.repository, app.preferenciasStore, usuarioIdGuardado)
                 val vm: ServiciosViewModel = viewModel(factory = factory)
-                Scaffold(topBar = { AppTopBar("Servicios") }) { padding ->
+                Scaffold(topBar = { AppTopBar(titulo = "Servicios", onAtras = { nav.popBackStack() }) }) { padding ->
                     Box(Modifier.padding(padding)) {
-                        ServiciosScreen(vm = vm, onEditar = { /* Paso 13 */ })
+                        ServiciosScreen(
+                            vm = vm,
+                            onEditar = { id -> nav.navigate(Rutas.formularioServicio(id)) }
+                        )
                     }
                 }
+            }
+
+            composable(
+                route = Rutas.FORMULARIO_SERVICIO,
+                arguments = listOf(navArgument("servicioId") { type = NavType.IntType })
+            ) { backStackEntry ->
+                val servicioId = backStackEntry.arguments?.getInt("servicioId") ?: 0
+                val factory = LavaViewModelFactory(app.repository, app.preferenciasStore, usuarioIdGuardado, servicioId = servicioId)
+                val vm: FormularioServicioViewModel = viewModel(factory = factory)
+                FormularioServicioScreen(
+                    vm = vm,
+                    onAtras = { nav.popBackStack() }
+                )
+            }
+
+            composable(Rutas.CLIENTES) {
+                val factory = LavaViewModelFactory(app.repository, app.preferenciasStore, usuarioIdGuardado)
+                val vm: ClientesViewModel = viewModel(factory = factory)
+                ClientesScreen(
+                    vm = vm,
+                    onAtras = { nav.popBackStack() }
+                )
+            }
+
+            composable(Rutas.AJUSTES) {
+                val factory = LavaViewModelFactory(app.repository, app.preferenciasStore, usuarioIdGuardado)
+                val vm: AjustesViewModel = viewModel(factory = factory)
+                AjustesScreen(
+                    vm = vm,
+                    onAtras = { nav.popBackStack() },
+                    onCerrarSesion = {
+                        nav.navigate(Rutas.LOGIN) {
+                            popUpTo(0) { inclusive = true }
+                        }
+                    }
+                )
             }
         }
     }
