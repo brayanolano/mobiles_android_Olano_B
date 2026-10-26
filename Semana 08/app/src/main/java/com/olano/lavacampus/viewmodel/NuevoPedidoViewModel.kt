@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.DayOfWeek
@@ -43,9 +44,31 @@ class NuevoPedidoViewModel(
         _error.value = null
     }
 
-    val total: StateFlow<Double> = combine(serviciosActivos, cantidades) { servicios, cants ->
+    // Subtotal bruto antes de descuentos
+    val subtotal: StateFlow<Double> = combine(serviciosActivos, cantidades) { servicios, cants ->
         servicios.sumOf { s -> (cants[s.id] ?: 0.0) * s.precio }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0.0)
+
+    // Cálculo del Descuento por Volumen: 10% si un servicio por kilo (ej. Lavado y secado) supera los 5.0 kg
+    val descuento: StateFlow<Double> = combine(serviciosActivos, cantidades) { servicios, cants ->
+        var descTotal = 0.0
+        for (s in servicios) {
+            val cant = cants[s.id] ?: 0.0
+            if (s.unidad == "KG" && cant > 5.0) {
+                val subtotalServicio = cant * s.precio
+                descTotal += subtotalServicio * 0.10
+            }
+        }
+        descTotal
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0.0)
+
+    // Total neto con descuento aplicado
+    val total: StateFlow<Double> = combine(subtotal, descuento) { sub, desc ->
+        (sub - desc).coerceAtLeast(0.0)
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0.0)
+
+    val tieneDescuentoVolumen: StateFlow<Boolean> = descuento.map { it > 0.0 }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
     val fechaEntregaEstimada: StateFlow<String> = combine(serviciosActivos, cantidades) { servicios, cants ->
         val seleccionados = servicios.filter { (cants[it.id] ?: 0.0) > 0.0 }
@@ -81,7 +104,8 @@ class NuevoPedidoViewModel(
                 }
 
                 val fechaEntrega = fechaEntregaEstimada.value
-                val pedidoId = repo.crearPedido(usuarioId, lineas, fechaEntrega, nota.trim())
+                val descVal = descuento.value
+                val pedidoId = repo.crearPedido(usuarioId, lineas, fechaEntrega, nota.trim(), descuento = descVal)
                 _cargando.value = false
                 onExito(pedidoId.toInt())
             } catch (e: Exception) {

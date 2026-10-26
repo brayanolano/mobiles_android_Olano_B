@@ -15,8 +15,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -45,6 +47,8 @@ fun NuevoPedidoScreen(
 ) {
     val servicios by vm.serviciosActivos.collectAsState()
     val cantidades by vm.cantidades.collectAsState()
+    val subtotal by vm.subtotal.collectAsState()
+    val descuento by vm.descuento.collectAsState()
     val total by vm.total.collectAsState()
     val fechaEntrega by vm.fechaEntregaEstimada.collectAsState()
     val error by vm.error.collectAsState()
@@ -127,8 +131,24 @@ fun NuevoPedidoScreen(
             ) {
                 Column(
                     modifier = Modifier.padding(20.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
+                    if (descuento > 0.0) {
+                        Surface(
+                            color = MaterialTheme.colorScheme.primaryContainer,
+                            shape = RoundedCornerShape(10.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                text = "🎉 ¡10% de Descuento por Volumen aplicado (+5 kg)!",
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                            )
+                        }
+                    }
+
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
@@ -147,6 +167,41 @@ fun NuevoPedidoScreen(
                         }
 
                         Column(horizontalAlignment = Alignment.End) {
+                            if (descuento > 0.0) {
+                                Row(
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = "Subtotal:",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                                    )
+                                    Text(
+                                        text = "S/ %.2f".format(subtotal),
+                                        style = MaterialTheme.typography.bodySmall
+                                    )
+                                }
+                                Row(
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = "Descuento (10%):",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.primary,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    Text(
+                                        text = "- S/ %.2f".format(descuento),
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.primary,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                                HorizontalDivider(modifier = Modifier.padding(vertical = 2.dp))
+                            }
+
                             Text(
                                 text = "Total a pagar",
                                 style = MaterialTheme.typography.bodySmall,

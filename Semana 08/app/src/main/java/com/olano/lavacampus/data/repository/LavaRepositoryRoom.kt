@@ -52,26 +52,29 @@ class LavaRepositoryRoom(private val db: LavaDatabase) : LavaRepository {
         usuarioId: Int,
         lineas: List<LineaPedido>,
         fechaEntrega: String,
-        nota: String
+        nota: String,
+        descuento: Double
     ): Long = db.withTransaction {
         val hoy = LocalDate.now().toString()
-        var total = 0.0
+        var subtotalAcumulado = 0.0
         val detallesAInsertar = mutableListOf<DetallePedido>()
 
         for (linea in lineas) {
             val s = db.servicioDao().obtener(linea.servicioId) ?: continue
-            val subtotal = linea.cantidad * s.precio
-            total += subtotal
+            val subtotalLine = linea.cantidad * s.precio
+            subtotalAcumulado += subtotalLine
             detallesAInsertar.add(
                 DetallePedido(
                     pedidoId = 0,
                     servicioId = s.id,
                     cantidad = linea.cantidad,
                     precioUnitario = s.precio,
-                    subtotal = subtotal
+                    subtotal = subtotalLine
                 )
             )
         }
+
+        val totalFinal = (subtotalAcumulado - descuento).coerceAtLeast(0.0)
 
         val pedidoId = db.pedidoDao().insertar(
             Pedido(
@@ -79,10 +82,11 @@ class LavaRepositoryRoom(private val db: LavaDatabase) : LavaRepository {
                 fechaRegistro = hoy,
                 fechaEntrega = fechaEntrega,
                 estado = EstadoPedido.RECIBIDO.name,
-                total = total,
+                total = totalFinal,
                 casillero = null,
                 pagado = false,
-                nota = nota
+                nota = nota,
+                descuento = descuento
             )
         )
 

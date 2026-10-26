@@ -1,6 +1,5 @@
 package com.olano.lavacampus.ui.estudiante
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -69,6 +68,8 @@ fun DetallePedidoScreen(
             } catch (e: Exception) {
                 EstadoPedido.RECIBIDO
             }
+
+            val subtotalBruto = detalles.sumOf { it.detalle.subtotal }
 
             LazyColumn(
                 modifier = Modifier
@@ -228,6 +229,34 @@ fun DetallePedidoScreen(
                             }
 
                             HorizontalDivider()
+
+                            if (p.descuento > 0.0) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text(text = "Subtotal", style = MaterialTheme.typography.bodyMedium)
+                                    Text(text = "S/ %.2f".format(subtotalBruto), style = MaterialTheme.typography.bodyMedium)
+                                }
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text(
+                                        text = "Descuento por Volumen (10%)",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.primary,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    Text(
+                                        text = "- S/ %.2f".format(p.descuento),
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.primary,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                                HorizontalDivider()
+                            }
 
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
