@@ -16,9 +16,11 @@ import com.olano.lavacampus.LavaApp
 import com.olano.lavacampus.model.Rol
 import com.olano.lavacampus.ui.administrador.ServiciosScreen
 import com.olano.lavacampus.ui.components.AppTopBar
+import com.olano.lavacampus.ui.estudiante.InicioScreen
 import com.olano.lavacampus.ui.estudiante.LoginScreen
 import com.olano.lavacampus.ui.estudiante.SplashScreen
 import com.olano.lavacampus.ui.theme.LavaTheme
+import com.olano.lavacampus.viewmodel.InicioViewModel
 import com.olano.lavacampus.viewmodel.LavaViewModelFactory
 import com.olano.lavacampus.viewmodel.ServiciosViewModel
 import com.olano.lavacampus.viewmodel.SesionViewModel
@@ -27,12 +29,14 @@ import com.olano.lavacampus.viewmodel.SesionViewModel
 fun NavLava() {
     val nav = rememberNavController()
     val app = LocalContext.current.applicationContext as LavaApp
-    val factory = LavaViewModelFactory(app.repository, app.preferenciasStore)
 
     val perfilGuardado by app.preferenciasStore.perfilActivo.collectAsState(initial = "")
+    val usuarioIdGuardado by app.preferenciasStore.usuarioId.collectAsState(initial = -1)
     val modoOscuro by app.preferenciasStore.modoOscuro.collectAsState(initial = false)
 
     val rolActual = if (perfilGuardado == Rol.ADMIN.name) Rol.ADMIN else Rol.CLIENTE
+
+    val factory = LavaViewModelFactory(app.repository, app.preferenciasStore, usuarioIdGuardado)
 
     LavaTheme(rol = rolActual, modoOscuro = modoOscuro) {
         NavHost(navController = nav, startDestination = Rutas.SPLASH) {
@@ -59,6 +63,17 @@ fun NavLava() {
                             popUpTo(Rutas.LOGIN) { inclusive = true }
                         }
                     }
+                )
+            }
+
+            composable(Rutas.INICIO) {
+                val vm: InicioViewModel = viewModel(factory = factory)
+                InicioScreen(
+                    vm = vm,
+                    onNuevoPedido = { nav.navigate(Rutas.NUEVO_PEDIDO) },
+                    onVerPedidos = { nav.navigate(Rutas.MIS_PEDIDOS) },
+                    onVerTarifas = { nav.navigate(Rutas.TARIFAS) },
+                    onVerDetalle = { id -> nav.navigate(Rutas.detallePedido(id)) }
                 )
             }
 
