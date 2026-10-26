@@ -33,7 +33,8 @@ import com.olano.lavacampus.viewmodel.AjustesViewModel
 fun AjustesScreen(
     vm: AjustesViewModel,
     onAtras: () -> Unit,
-    onCerrarSesion: () -> Unit
+    onCerrarSesion: () -> Unit,
+    onCambiarPerfilExito: ((String) -> Unit)? = null
 ) {
     val perfilActivo by vm.perfilActivo.collectAsState()
     val modoOscuro by vm.modoOscuro.collectAsState()
@@ -107,7 +108,11 @@ fun AjustesScreen(
             ) {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     OutlinedButton(
-                        onClick = { vm.cambiarPerfil("CLIENTE") },
+                        onClick = {
+                            vm.cambiarPerfil("CLIENTE") {
+                                onCambiarPerfilExito?.invoke("CLIENTE")
+                            }
+                        },
                         enabled = perfilActivo != "CLIENTE",
                         modifier = Modifier.fillMaxWidth()
                     ) {
@@ -115,7 +120,11 @@ fun AjustesScreen(
                     }
 
                     OutlinedButton(
-                        onClick = { vm.cambiarPerfil("ADMIN") },
+                        onClick = {
+                            vm.cambiarPerfil("ADMIN") {
+                                onCambiarPerfilExito?.invoke("ADMIN")
+                            }
+                        },
                         enabled = perfilActivo != "ADMIN",
                         modifier = Modifier.fillMaxWidth()
                     ) {

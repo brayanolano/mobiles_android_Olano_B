@@ -11,41 +11,43 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface PedidoDao {
-    // Escritura
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertar(p: Pedido): Long
+    suspend fun insertar(pedido: Pedido): Long
 
-    @Query("UPDATE pedidos SET estado = :estado, casillero = :casillero WHERE id = :id")
-    suspend fun actualizarEstado(id: Int, estado: String, casillero: String?)
-
-    @Query("UPDATE pedidos SET pagado = :pagado WHERE id = :id")
-    suspend fun actualizarPagado(id: Int, pagado: Boolean)
-
-    @Query("SELECT * FROM pedidos WHERE id = :id")
-    suspend fun obtener(id: Int): Pedido?
-
-    // Lectura (Flow + @Transaction)
-    @Transaction
-    @Query("SELECT * FROM pedidos WHERE usuarioId = :usuarioId ORDER BY id DESC")
-    fun observarPorUsuario(usuarioId: Int): Flow<List<PedidoConDetalle>>
-
-    @Transaction
-    @Query("SELECT * FROM pedidos ORDER BY id DESC")
-    fun observarTodos(): Flow<List<PedidoConDetalle>>
-
-    @Transaction
-    @Query("SELECT * FROM pedidos WHERE id = :id")
-    fun observarUno(id: Int): Flow<PedidoConDetalle?>
-
-    // Reglas
     @Query("SELECT COUNT(*) FROM pedidos WHERE usuarioId = :usuarioId AND estado IN ('RECIBIDO', 'EN_PROCESO', 'LISTO')")
     suspend fun contarActivos(usuarioId: Int): Int
 
-    @Query("SELECT casillero FROM pedidos WHERE estado = 'LISTO' AND casillero IS NOT NULL")
+    @Transaction
+    @Query("SELECT * FROM pedidos ORDER BY fechaCreacion DESC")
+    fun observarTodos(): Flow<List<PedidoConDetalle>>
+
+    @Transaction
+    @Query("SELECT * FROM pedidos ORDER BY fechaCreacion DESC")
+    fun observarTodosConDetalle(): Flow<List<PedidoConDetalle>>
+
+    @Transaction
+    @Query("SELECT * FROM pedidos WHERE usuarioId = :usuarioId ORDER BY fechaCreacion DESC")
+    fun observarPorUsuario(usuarioId: Int): Flow<List<PedidoConDetalle>>
+
+    @Transaction
+    @Query("SELECT * FROM pedidos WHERE id = :pedidoId LIMIT 1")
+    fun observarUno(pedidoId: Int): Flow<PedidoConDetalle?>
+
+    @Transaction
+    @Query("SELECT * FROM pedidos WHERE id = :pedidoId LIMIT 1")
+    fun observarPorId(pedidoId: Int): Flow<PedidoConDetalle?>
+
+    @Query("UPDATE pedidos SET estado = :nuevoEstado, casillero = :casillero WHERE id = :pedidoId")
+    suspend fun actualizarEstado(pedidoId: Int, nuevoEstado: String, casillero: String?)
+
+    @Query("UPDATE pedidos SET pagado = :pagado WHERE id = :pedidoId")
+    suspend fun actualizarPagado(pedidoId: Int, pagado: Boolean)
+
+    @Query("SELECT DISTINCT casillero FROM pedidos WHERE estado = 'LISTO' AND casillero IS NOT NULL AND casillero != ''")
     fun observarCasillerosOcupados(): Flow<List<String>>
 
-    // Panel
-    @Query("SELECT COUNT(*) FROM pedidos WHERE fechaRegistro = :fecha AND estado != 'CANCELADO'")
+    @Query("SELECT COUNT(*) FROM pedidos WHERE fechaRegistro = :fecha")
     fun contarPorFecha(fecha: String): Flow<Int>
 
     @Query("SELECT COUNT(*) FROM pedidos WHERE estado = :estado")

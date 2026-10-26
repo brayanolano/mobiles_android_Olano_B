@@ -31,7 +31,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.olano.lavacampus.data.local.relation.PedidoConDetalle
 import com.olano.lavacampus.model.EstadoPedido
 import com.olano.lavacampus.ui.components.LavaButton
 import com.olano.lavacampus.ui.components.PedidoCard
@@ -49,7 +48,6 @@ fun InicioScreen(
     val activo by vm.pedidoActivo.collectAsState()
     val recientes by vm.recientes.collectAsState()
 
-    // Nombre y código del usuario obtenidos desde el último pedido o por defecto
     val usuarioNombre = recientes.firstOrNull()?.usuario?.nombre ?: "Estudiante"
     val usuarioCodigo = recientes.firstOrNull()?.usuario?.codigo ?: "U202310234"
 
@@ -86,7 +84,7 @@ fun InicioScreen(
             }
         }
 
-        // Tarjeta turquesa del pedido activo
+        // Tarjeta del pedido activo
         item {
             Card(
                 shape = RoundedCornerShape(20.dp),
@@ -96,7 +94,11 @@ fun InicioScreen(
                 Column(Modifier.padding(20.dp)) {
                     if (activo != null) {
                         val p = activo!!.pedido
-                        val estadoEnum = EstadoPedido.valueOf(p.estado)
+                        val estadoEnum = try {
+                            EstadoPedido.valueOf(p.estado)
+                        } catch (e: Exception) {
+                            EstadoPedido.RECIBIDO
+                        }
 
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -111,14 +113,14 @@ fun InicioScreen(
                                 text = "#%03d".format(p.id),
                                 color = MaterialTheme.colorScheme.onPrimary,
                                 fontWeight = FontWeight.Bold,
-                                style = MaterialTheme.colorScheme.typography.bodyMedium
+                                style = MaterialTheme.typography.bodyMedium
                             )
                         }
 
                         Spacer(modifier = Modifier.height(4.dp))
 
                         Text(
-                            text = if (estadoEnum == EstadoPedido.LISTO && !p.casillero.isNull_or_empty()) {
+                            text = if (estadoEnum == EstadoPedido.LISTO && !p.casillero.isNullOrEmpty()) {
                                 "Recógelo en el casillero ${p.casillero}"
                             } else {
                                 estadoEnum.etiqueta
@@ -136,7 +138,7 @@ fun InicioScreen(
 
                         Spacer(modifier = Modifier.height(16.dp))
 
-                        StepperEstado(estado = estadoEnum, horizontal = true)
+                        StepperEstado(estado = estadoEnum, vertical = false)
                     } else {
                         Text(
                             text = "Tu pedido activo",
@@ -217,8 +219,6 @@ fun InicioScreen(
         }
     }
 }
-
-private fun String?.isNull_or_empty(): Boolean = this == null || this.isEmpty()
 
 @Composable
 private fun AccesoRapidoCard(

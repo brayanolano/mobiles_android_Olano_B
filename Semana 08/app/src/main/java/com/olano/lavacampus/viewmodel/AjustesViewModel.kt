@@ -34,8 +34,12 @@ class AjustesViewModel(private val prefs: PreferenciasStore) : ViewModel() {
         viewModelScope.launch { prefs.guardarRecibirPedidos(activo) }
     }
 
-    fun cambiarPerfil(rol: String) {
-        viewModelScope.launch { prefs.guardarSesion(rol, if (rol == "ADMIN") 1 else 2) }
+    fun cambiarPerfil(rol: String, onExito: (() -> Unit)? = null) {
+        viewModelScope.launch {
+            val nuevoUsuarioId = if (rol == "ADMIN") 4 else 1
+            prefs.guardarSesion(rol, nuevoUsuarioId)
+            onExito?.invoke()
+        }
     }
 
     fun cerrarSesion(onExito: () -> Unit) {
