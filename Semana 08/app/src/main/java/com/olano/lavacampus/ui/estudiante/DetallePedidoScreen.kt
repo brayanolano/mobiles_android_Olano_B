@@ -12,10 +12,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Repeat
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -39,7 +43,8 @@ import com.olano.lavacampus.viewmodel.DetallePedidoViewModel
 @Composable
 fun DetallePedidoScreen(
     vm: DetallePedidoViewModel,
-    onAtras: () -> Unit
+    onAtras: () -> Unit,
+    onRepetirPedido: ((Int) -> Unit)? = null
 ) {
     val pedidoConDetalle by vm.pedidoConDetalle.collectAsState()
 
@@ -184,7 +189,7 @@ fun DetallePedidoScreen(
                     LineaDetalleItem(detalleConServicio = d)
                 }
 
-                // Resumen de pago
+                // Resumen de pago y Acción Pedir de nuevo
                 item {
                     Card(
                         shape = RoundedCornerShape(20.dp),
@@ -277,11 +282,25 @@ fun DetallePedidoScreen(
                             }
 
                             if (!p.pagado) {
-                                Spacer(modifier = Modifier.height(8.dp))
+                                Spacer(modifier = Modifier.height(4.dp))
                                 LavaButton(
                                     texto = "Simular pago (Yape / PLIN)",
                                     onClick = { vm.simularPago() }
                                 )
+                            }
+
+                            OutlinedButton(
+                                onClick = { onRepetirPedido?.invoke(p.id) },
+                                shape = RoundedCornerShape(14.dp),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    Icon(imageVector = Icons.Filled.Repeat, contentDescription = "Pedir de nuevo")
+                                    Text("Pedir de nuevo", fontWeight = FontWeight.Bold)
+                                }
                             }
                         }
                     }

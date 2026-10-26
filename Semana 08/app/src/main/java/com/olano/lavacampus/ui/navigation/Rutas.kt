@@ -4,7 +4,7 @@ object Rutas {
     const val SPLASH = "splash"
     const val LOGIN = "login"
     const val INICIO = "inicio"
-    const val NUEVO_PEDIDO = "nuevo_pedido"
+    const val NUEVO_PEDIDO = "nuevo_pedido?repetirId={repetirId}"
     const val DETALLE_PEDIDO = "detalle_pedido/{pedidoId}"
     const val MIS_PEDIDOS = "mis_pedidos"
     const val TARIFAS = "tarifas"
@@ -17,6 +17,7 @@ object Rutas {
     const val CLIENTES = "clientes_admin"
     const val AJUSTES = "ajustes_admin"
 
+    fun nuevoPedido(repetirId: Int = -1) = if (repetirId > 0) "nuevo_pedido?repetirId=$repetirId" else "nuevo_pedido"
     fun detallePedido(id: Int) = "detalle_pedido/$id"
     fun gestionPedido(id: Int) = "gestion_pedido/$id"
     fun formularioServicio(id: Int) = "formulario_servicio/$id"

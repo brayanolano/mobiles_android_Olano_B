@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -18,7 +19,8 @@ import java.time.LocalDate
 
 class NuevoPedidoViewModel(
     private val repo: LavaRepository,
-    val usuarioId: Int
+    val usuarioId: Int,
+    val repetirPedidoId: Int = -1
 ) : ViewModel() {
 
     val serviciosActivos: StateFlow<List<Servicio>> = repo.observarServiciosActivos()
@@ -32,6 +34,25 @@ class NuevoPedidoViewModel(
 
     private val _cargando = MutableStateFlow(false)
     val cargando: StateFlow<Boolean> = _cargando.asStateFlow()
+
+    init {
+        if (repetirPedidoId > 0) {
+            cargarPedidoARepetir(repetirPedidoId)
+        }
+    }
+
+    private fun cargarPedidoARepetir(pedidoId: Int) {
+        viewModelScope.launch {
+            val pedidoConDetalle = repo.observarPedido(pedidoId).firstOrNull()
+            if (pedidoConDetalle != null) {
+                val mapaCantidades = mutableMapOf<Int, Double>()
+                for (d in pedidoConDetalle.detalles) {
+                    mapaCantidades[d.servicio.id] = d.detalle.cantidad
+                }
+                _cantidades.value = mapaCantidades
+            }
+        }
+    }
 
     fun actualizarCantidad(servicioId: Int, cantidad: Double) {
         val mapa = _cantidades.value.toMutableMap()

@@ -2,12 +2,22 @@ package com.olano.lavacampus.ui.estudiante
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Repeat
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -25,7 +35,8 @@ import com.olano.lavacampus.viewmodel.MisPedidosViewModel
 fun MisPedidosScreen(
     vm: MisPedidosViewModel,
     onAtras: () -> Unit,
-    onVerDetalle: (Int) -> Unit
+    onVerDetalle: (Int) -> Unit,
+    onRepetirPedido: ((Int) -> Unit)? = null
 ) {
     val pedidos by vm.pedidos.collectAsState()
 
@@ -62,10 +73,35 @@ fun MisPedidosScreen(
                 }
 
                 items(pedidos, key = { it.pedido.id }) { p ->
-                    PedidoCard(
-                        pedidoConDetalle = p,
-                        onClick = { onVerDetalle(p.pedido.id) }
-                    )
+                    Card(
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Column {
+                            PedidoCard(
+                                pedidoConDetalle = p,
+                                onClick = { onVerDetalle(p.pedido.id) }
+                            )
+
+                            OutlinedButton(
+                                onClick = { onRepetirPedido?.invoke(p.pedido.id) },
+                                shape = RoundedCornerShape(12.dp),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp)
+                                    .padding(bottom = 12.dp)
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
+                                    Icon(imageVector = Icons.Filled.Repeat, contentDescription = "Pedir de nuevo")
+                                    Text("Pedir de nuevo", fontWeight = FontWeight.Bold)
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }

@@ -10,7 +10,8 @@ class LavaViewModelFactory(
     private val prefs: PreferenciasStore,
     private val usuarioId: Int = -1,
     private val pedidoId: Int = -1,
-    private val servicioId: Int = -1
+    private val servicioId: Int = -1,
+    private val repetirPedidoId: Int = -1
 ) : ViewModelProvider.Factory {
 
     @Suppress("UNCHECKED_CAST")
@@ -25,7 +26,7 @@ class LavaViewModelFactory(
             InicioViewModel(repo, usuarioId) as T
 
         modelClass.isAssignableFrom(NuevoPedidoViewModel::class.java) ->
-            NuevoPedidoViewModel(repo, usuarioId) as T
+            NuevoPedidoViewModel(repo, usuarioId, repetirPedidoId) as T
 
         modelClass.isAssignableFrom(DetallePedidoViewModel::class.java) ->
             DetallePedidoViewModel(repo, pedidoId) as T

@@ -144,7 +144,10 @@ class MainActivity : ComponentActivity() {
                             MisPedidosScreen(
                                 vm = viewModel<MisPedidosViewModel>(factory = factory),
                                 onAtras = { navController.popBackStack() },
-                                onVerDetalle = { id -> navController.navigate("detalle_pedido/$id") }
+                                onVerDetalle = { id -> navController.navigate("detalle_pedido/$id") },
+                                onRepetirPedido = { repetirId ->
+                                    navController.navigate("nuevo_pedido?repetirId=$repetirId")
+                                }
                             )
                         }
 
@@ -175,8 +178,22 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
-                        composable("nuevo_pedido") {
-                            val factory = LavaViewModelFactory(app.repository, app.preferenciasStore, usuarioIdGuardado)
+                        composable(
+                            route = "nuevo_pedido?repetirId={repetirId}",
+                            arguments = listOf(
+                                navArgument("repetirId") {
+                                    type = NavType.IntType
+                                    defaultValue = -1
+                                }
+                            )
+                        ) { backStackEntry ->
+                            val repetirId = backStackEntry.arguments?.getInt("repetirId") ?: -1
+                            val factory = LavaViewModelFactory(
+                                repo = app.repository,
+                                prefs = app.preferenciasStore,
+                                usuarioId = usuarioIdGuardado,
+                                repetirPedidoId = repetirId
+                            )
                             NuevoPedidoScreen(
                                 vm = viewModel<NuevoPedidoViewModel>(factory = factory),
                                 onAtras = { navController.popBackStack() },
@@ -196,7 +213,10 @@ class MainActivity : ComponentActivity() {
                             val factory = LavaViewModelFactory(app.repository, app.preferenciasStore, usuarioIdGuardado, pedidoId = pedidoId)
                             DetallePedidoScreen(
                                 vm = viewModel<DetallePedidoViewModel>(factory = factory),
-                                onAtras = { navController.popBackStack() }
+                                onAtras = { navController.popBackStack() },
+                                onRepetirPedido = { repetirId ->
+                                    navController.navigate("nuevo_pedido?repetirId=$repetirId")
+                                }
                             )
                         }
 
